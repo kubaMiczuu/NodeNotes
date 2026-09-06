@@ -60,6 +60,8 @@ public class SubItemService {
         subItem.setText(updateRequest.text());
         subItem.setDone(updateRequest.isDone());
 
+        if(updateRequest.isDone()) markAllChildrenAsDone(subItem);
+
         subItemRepository.save(subItem);
     }
 
@@ -71,6 +73,13 @@ public class SubItemService {
         if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
 
         subItemRepository.delete(subItem);
+    }
+
+    private void markAllChildrenAsDone(SubItem subItem) {
+        for(SubItem child : subItem.getChildren()) {
+            child.setDone(true);
+            markAllChildrenAsDone(child);
+        }
     }
 
 }
