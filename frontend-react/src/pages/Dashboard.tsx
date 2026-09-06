@@ -1,10 +1,12 @@
-import TaskCard from "../components/TaskCard.tsx"
+import NoteTaskCard from "../components/NoteTaskCard.tsx"
 import {useEffect, useState} from "react"
-import TaskFormModal, {type TaskData} from "../components/TaskFormModal.tsx";
+import TaskFormModal from "../components/TaskFormModal.tsx";
+import type {TaskData} from "../types/task.ts"
 import DashboardToolbar from "../components/DashboardToolbar.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
 import Pagination from "../components/Pagination.tsx";
 import {useDebounce} from "../hooks/useDebounce.ts";
+import TreeTaskCard from "../components/TreeTaskCard.tsx";
 
 const Dashboard = () => {
 
@@ -112,12 +114,16 @@ const Dashboard = () => {
             <>
                 <ul className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
                     {tasks.map((task: TaskData) => (
-                        <li key={task.id} onClick={() => handleUpdateClick(task)}>
-                            <TaskCard task={task}/>
+                        <li key={task.id} className={`h-full block`} onClick={() => handleUpdateClick(task)}>
+                            {task.type === "NOTE"
+                                ? <NoteTaskCard task={task} totalTasks={tasks.length} />
+                                : <TreeTaskCard task={task} totalTasks={tasks.length} />
+                            }
                         </li>
                     ))}
                 </ul>
-                <div className="mt-4 p-4 flex items-center justify-center text-slate-400">
+
+                <div className="mt-3 p-4 flex items-center justify-center text-slate-400">
                     <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
                 </div>
             </>

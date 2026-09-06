@@ -10,6 +10,8 @@ import DeleteConfirmOverlay from "./common/DeleteConfirmOverlay.tsx";
 import TaskStatusChangeButton from "./TaskStatusChangeButton.tsx";
 import ModalFooter from "./common/ModalFooter.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
+import TaskTypeSelectButton from "./TaskTypeSelectButton.tsx";
+import type {TaskData} from "../types/task.ts"
 
 interface TaskFormModalProps {
     mode: "UPDATE" | "ADD";
@@ -17,14 +19,6 @@ interface TaskFormModalProps {
     onCancel: () => void;
     onSuccess: () => void;
 }
-
-export interface TaskData {
-    id?: number;
-    status: "TODO" | "IN_PROGRESS" | "DONE";
-    title: string;
-    description?: string;
-}
-
 const modeConfig = {
     ADD: {
         headerText: "Create a new task",
@@ -52,7 +46,8 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
         defaultValues: {
             title: initialData?.title || "",
             description: initialData?.description || "",
-            status: initialData?.status || "TODO"
+            status: initialData?.status || "TODO",
+            type: initialData?.type || "NOTE"
         }
     });
 
@@ -61,11 +56,16 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
         name: 'status'
     })
 
-    const onSubmit = async (data: TaskData) => {
+    const currentType = useWatch({
+        control,
+        name: 'type'
+    })
+
+    const onSubmit = async (data: TaskFormData) => {
         if(mode === "ADD") {
-            await axiosClient.post("/tasks", {title: data.title, description: data.description})
+            await axiosClient.post("/tasks", {title: data.title, description: data.description, type: data.type})
         } else if(mode === "UPDATE") {
-            await axiosClient.put("/tasks", {taskId: initialData?.id, title: data.title, description: data.description, status: data.status})
+            await axiosClient.put("/tasks/"+initialData?.id, {title: data.title, description: data.description, status: data.status})
         }
 
         onSuccess();
@@ -91,9 +91,27 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
 
                     <InputField id={'title'} label={'Title'} placeholder={'Enter title'} register={register('title')} error={errors.title?.message}/>
 
-                    <TextAreaField id={'description'} label={'Description'} placeholder={'Type something about this task...'} register={register('description')} error={errors.description?.message}/>
+                    {currentType === "NOTE" && (
+                        <TextAreaField id={'description'} label={'Description'} placeholder={'Type something about this task...'} register={register('description')} error={errors.description?.message}/>
+                    )}
 
-                    {mode === "UPDATE" && (
+                    {mode === "ADD" && (
+                        <>
+                            <h2 className={`text-md text-slate-700 font-bold`}>
+                                Select Task Type
+                            </h2>
+
+                            <div className={`flex gap-4 justify-center`}>
+
+                                <TaskTypeSelectButton type={"NOTE"} onValueChange={setValue} isActive={currentType === "NOTE"} />
+
+                                <TaskTypeSelectButton type={"TREE"} onValueChange={setValue} isActive={currentType === "TREE"} />
+
+                            </div>
+                        </>
+                    )}
+
+                    {mode === "UPDATE" && currentType === "NOTE" && (
                         <div className={`flex gap-4 justify-center`}>
 
                             {currentStatus !== "TODO" && (
