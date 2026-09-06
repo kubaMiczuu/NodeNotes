@@ -35,7 +35,7 @@ const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
     return (
         <article className={`flex flex-col h-full rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer ${config.border}`}>
 
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between items-baseline w-full">
 
                 <h2 className={`text-md font-bold tracking-wide ${config.text}`}>
                     {config.label}
@@ -43,7 +43,7 @@ const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
 
                 <span className={`text-xs ${config.text} italic`}>
                     {creationDate !== updateDate
-                        ? `Last modified: ${updateDate}`
+                        ? `Modified: ${updateDate}`
                         : `Created: ${creationDate}`
                     }
                 </span>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const taskSchema = z.object({
-    title: z.string().trim().min(1, { message: "Title cannot be empty" }),
+    title: z.string().trim().min(1, { message: "Title cannot be empty" }).max(50, { message: "Title cannot be longer than 50 characters" }),
     description: z.string().trim().optional(),
     status: z.enum(["TODO", "IN_PROGRESS", "DONE"]),
     type: z.enum(["NOTE", "TREE"])
