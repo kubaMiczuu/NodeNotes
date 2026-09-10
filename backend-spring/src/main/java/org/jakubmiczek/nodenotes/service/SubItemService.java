@@ -4,12 +4,15 @@ import org.jakubmiczek.nodenotes.controller.dto.SubItemRequest;
 import org.jakubmiczek.nodenotes.controller.dto.SubItemUpdateRequest;
 import org.jakubmiczek.nodenotes.entity.SubItem;
 import org.jakubmiczek.nodenotes.entity.Task;
+import org.jakubmiczek.nodenotes.entity.TaskStatus;
 import org.jakubmiczek.nodenotes.exception.SubItemDoesNotExistException;
 import org.jakubmiczek.nodenotes.exception.TaskAccessDeniedException;
 import org.jakubmiczek.nodenotes.exception.TaskDoesNotExistException;
 import org.jakubmiczek.nodenotes.repository.SubItemRepository;
 import org.jakubmiczek.nodenotes.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -62,6 +65,8 @@ public class SubItemService {
 
         if(updateRequest.isDone()) markAllChildrenAsDone(subItem);
 
+        task.setStatus(updateTaskStatus(subItem.getTask()));
+
         subItemRepository.save(subItem);
     }
 
@@ -80,6 +85,23 @@ public class SubItemService {
             child.setDone(true);
             markAllChildrenAsDone(child);
         }
+    }
+
+    private TaskStatus updateTaskStatus(Task task) {
+        List<SubItem> items = task.getItems();
+
+        int totalItems = 0;
+        int doneCount = 0;
+
+        for(SubItem subItem : items) {
+            totalItems++;
+            if(subItem.isDone()) doneCount++;
+
+        }
+
+        if(totalItems == doneCount) return TaskStatus.DONE;
+        else if(totalItems == 0 || doneCount == 0) return TaskStatus.TODO;
+        else return TaskStatus.IN_PROGRESS;
     }
 
 }
