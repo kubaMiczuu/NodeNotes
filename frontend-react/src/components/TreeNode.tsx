@@ -12,7 +12,7 @@ const TreeNode = ({child}:TreeNodeProps) => {
                 {child?.parentId && (
                     <div className="min-w-4 border-b-2 border-slate-300"></div>
                 )}
-                <p className={`pl-2 gap-1.5 truncate ${child?.isDone === true ? "line-through text-slate-400" : ""}`}>
+                <p className={`pl-2 gap-1.5 truncate ${child?.isDone ? "line-through text-slate-400" : ""}`}>
                     {child?.text}
                 </p>
             </div>

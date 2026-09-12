@@ -34,6 +34,7 @@ const Dashboard = () => {
     const handleCancelClick = () => {
         setSelectedTask(null);
         setModalMode(null);
+        setRefreshTrigger(prev => prev + 1);
     }
 
     const handleSearchChange = (newQuery:string) => {
@@ -48,31 +49,35 @@ const Dashboard = () => {
     }
 
     useEffect(() => {
-        // eslint-disable-next-line
-        setIsLoading(true);
+        const fetchData = async () => {
+            setIsLoading(true);
 
-        const requestParams:{ page: number; size: number, status?: string, title?: string } = {
-            page: currentPage,
-            size: 6
-        }
+            const requestParams: { page: number; size: number, status?: string, title?: string } = {
+                page: currentPage,
+                size: 6
+            };
 
-        if(debouncedSearchQuery !== "") {
-            requestParams.title = debouncedSearchQuery;
-        }
-        if(filterStatus !== "ALL") {
-            requestParams.status = filterStatus;
-        }
+            if (debouncedSearchQuery !== "") {
+                requestParams.title = debouncedSearchQuery;
+            }
+            if (filterStatus !== "ALL") {
+                requestParams.status = filterStatus;
+            }
 
-        axiosClient.get("/tasks", {
-            params: requestParams
-        })
-            .then((response) => {
-                setTasks(response.data.content);
-                setTotalPages(response.data.totalPages);
+            axiosClient.get("/tasks", {
+                params: requestParams
             })
-            .finally(() => {
-                setIsLoading(false);
-            });
+                .then((response) => {
+                    setTasks(response.data.content);
+                    setTotalPages(response.data.totalPages);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        };
+
+        void fetchData();
+
     }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus]);
 
     const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL";

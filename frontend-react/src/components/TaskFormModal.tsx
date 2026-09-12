@@ -12,6 +12,7 @@ import ModalFooter from "./common/ModalFooter.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
 import TaskTypeSelectButton from "./TaskTypeSelectButton.tsx";
 import type {TaskData} from "../types/task.ts"
+import InteractiveTreeContainer from "./InteractiveTreeContainer.tsx";
 
 interface TaskFormModalProps {
     mode: "UPDATE" | "ADD";
@@ -127,6 +128,10 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
                             )}
 
                         </div>
+                    )}
+
+                    {mode === "UPDATE" && currentType === "TREE" && (
+                        <InteractiveTreeContainer taskId={initialData?.id} initialItems={initialData?.children} />
                     )}
 
                 </div>
