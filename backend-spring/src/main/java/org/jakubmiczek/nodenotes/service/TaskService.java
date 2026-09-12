@@ -70,18 +70,24 @@ public class TaskService {
         return mapTaskToTaskResponse(desiredTasks);
     }
 
-    private Page<TaskResponse> mapTaskToTaskResponse(Page<Task> tasks) {
+    public TaskResponse getTaskById(Long taskId, String currentUsername) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskDoesNotExistException(taskId));
 
-        return tasks.map(task -> {
+        if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
 
-            List<SubItemResponse> subItems = task.getItems() != null
-                    ? task.getItems().stream()
-                    .filter(subItem -> subItem.getParent() == null)
-                    .map(this::mapSubItemToSubItemResponse)
-                    .toList()
-                    : List.of();
+        return mapSingleTaskToResponse(task);
+    }
 
-            return new TaskResponse(
+    private TaskResponse mapSingleTaskToResponse(Task task) {
+        List<SubItemResponse> subItems = task.getItems() != null
+                ? task.getItems().stream()
+                .filter(subItem -> subItem.getParent() == null)
+                .map(this::mapSubItemToSubItemResponse)
+                .toList()
+                : List.of();
+
+        return new TaskResponse(
                 task.getTaskId(),
                 task.getTitle(),
                 task.getDescription(),
@@ -91,8 +97,11 @@ public class TaskService {
                 task.getUpdatedAt(),
                 subItems,
                 task.getUser().getUsername()
-            );
-        });
+        );
+    }
+
+    private Page<TaskResponse> mapTaskToTaskResponse(Page<Task> tasks) {
+        return tasks.map(this::mapSingleTaskToResponse);
     }
 
     private SubItemResponse mapSubItemToSubItemResponse(SubItem item) {

@@ -55,4 +55,9 @@ public class TaskController {
     ) {
         return ResponseEntity.ok(taskService.getTasks(principal.getName(), status, type, title, pageable));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(taskService.getTaskById(id, principal.getName()));
+    }
 }
