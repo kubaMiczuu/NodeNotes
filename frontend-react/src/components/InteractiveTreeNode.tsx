@@ -1,5 +1,6 @@
 import type {SubItemData} from "../types/task.ts";
 import {axiosClient} from "../api/axiosClient.ts";
+import {useState} from "react";
 
 interface TreeNodeProps {
     item: SubItemData
@@ -13,9 +14,15 @@ interface TreeNodeProps {
 const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, setActiveInputId, fetchTreeData}: TreeNodeProps) => {
 
     const isAddingChild = activeInputId === item.id;
+    const [isEdditing, setIsEditing] = useState<boolean>(false);
 
     const updateSubTaskStatus = async (itemToUpdate:SubItemData) => {
         await axiosClient.patch("/subitems/"+itemToUpdate?.id+"/status?isDone="+itemToUpdate.isDone);
+        fetchTreeData();
+    }
+
+    const updateSubTaskText = async (itemToUpdate:SubItemData, text:string) => {
+        await axiosClient.patch("/subitems/"+itemToUpdate?.id+"/text?text="+text);
         fetchTreeData();
     }
 
@@ -29,9 +36,26 @@ const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, se
 
                 <input checked={item?.isDone || false} type={"checkbox"} onChange={() => updateSubTaskStatus(item)} />
 
-                <p className={`pl-2 gap-1.5 truncate ${item?.isDone ? "line-through text-slate-400" : ""} overflow-x-hidden`}>
-                    {item?.text}
-                </p>
+                {isEdditing ? (
+                    <input type={"text"}
+                           defaultValue={item?.text}
+                           autoFocus={true}
+                           onKeyDown={(e) => {
+                               if(e.key === 'Enter') {
+                                   e.preventDefault();
+                                   updateSubTaskText(item, e.currentTarget.value)
+                                   setIsEditing(false);
+                               }
+                           }}
+                           className={`pl-2 w-full outline-none text-slate-800 bg-slate-50 rounded-sm focus:ring-1 focus:ring-sky-400`}
+                    />
+                ) : (
+                    <p className={` pl-2 gap-1.5 truncate ${item?.isDone ? "line-through text-slate-400" : "hover:text-slate-800"} overflow-x-hidden hover:scale-105 hover:cursor-pointer`}
+                        onClick={() => setIsEditing(true)}>
+                        {item?.text}
+                    </p>
+                )}
+
 
                 <button type={'button'} onClick={() => setActiveInputId(item.id)} className={`text-xs hover:scale-105 cursor-pointer hover:"`}>➕</button>
 
