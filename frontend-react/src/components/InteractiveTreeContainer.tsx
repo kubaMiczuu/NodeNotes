@@ -24,21 +24,13 @@ const InteractiveTreeContainer = ({taskId, initialItems}:TreeContainerProps) => 
 
     const onAddChild = async (parentItem: SubItemData | null, text: string) => {
         if(parentItem !== null && parentItem !== undefined) {
-            await axiosClient.post("/subitems/"+parentItem.id+"/children", {text: text})
+            await axiosClient.post(`/subitems/${parentItem.id}/children`, {text: text})
         } else {
-            await axiosClient.post("/tasks/"+taskId+"/subitems", {text: text})
+            await axiosClient.post(`/tasks/${taskId}/subitems`, {text: text})
         }
 
         await fetchTreeData();
         setActiveInputId(null);
-    }
-
-    const onUpdateChild = (item: SubItemData) => {
-
-    }
-
-    const onRemoveChild = (item: SubItemData) => {
-
     }
 
     return (
@@ -51,11 +43,12 @@ const InteractiveTreeContainer = ({taskId, initialItems}:TreeContainerProps) => 
             <div className={`overflow-y-scroll w-full text-lg md:text-xl font-semibold text-slate-800 px-4 py-3 md:px-5 md:py-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition duration-200`}>
 
                 {items?.map((item: SubItemData) => (
-                    <InteractiveTreeNode key={item?.id} item={item} onAddChild={onAddChild} onRemoveChild={onRemoveChild} activeInputId={activeInputId} setActiveInputId={setActiveInputId} fetchTreeData={fetchTreeData} />
+                    <InteractiveTreeNode key={item?.id} item={item} onAddChild={onAddChild}  activeInputId={activeInputId} setActiveInputId={setActiveInputId} fetchTreeData={fetchTreeData} />
                 ))}
 
                 <input type={"text"}
                        autoFocus={true}
+                       onBlur={() => setActiveInputId(null)}
                        onKeyDown={(e) => {
                            if(e.key === 'Enter') {
                                e.preventDefault();

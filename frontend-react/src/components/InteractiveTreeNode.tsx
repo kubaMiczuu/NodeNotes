@@ -5,24 +5,30 @@ import {useState} from "react";
 interface TreeNodeProps {
     item: SubItemData
     onAddChild: (item: SubItemData, text:string) => void
-    onRemoveChild: (item: SubItemData) => void
     activeInputId: number | null,
-    setActiveInputId: (id:number) => void,
+    setActiveInputId: (id:number | null) => void,
     fetchTreeData: () => void,
 }
 
-const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, setActiveInputId, fetchTreeData}: TreeNodeProps) => {
+const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId, fetchTreeData}: TreeNodeProps) => {
 
     const isAddingChild = activeInputId === item.id;
-    const [isEdditing, setIsEditing] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const updateSubTaskStatus = async (itemToUpdate:SubItemData) => {
-        await axiosClient.patch("/subitems/"+itemToUpdate?.id+"/status?isDone="+itemToUpdate.isDone);
+        await axiosClient.patch(`/subitems/${itemToUpdate?.id}/status?isDone=${itemToUpdate.isDone}`);
         fetchTreeData();
     }
 
     const updateSubTaskText = async (itemToUpdate:SubItemData, text:string) => {
-        await axiosClient.patch("/subitems/"+itemToUpdate?.id+"/text?text="+text);
+        await axiosClient.patch(`/subitems/${itemToUpdate?.id}/text`, null, {
+            params: { text: text }
+        });
+        fetchTreeData();
+    }
+
+    const deleteSubItem = async (itemToDelete:SubItemData) => {
+        await axiosClient.delete(`/subitems/${itemToDelete?.id}`);
         fetchTreeData();
     }
 
@@ -36,10 +42,11 @@ const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, se
 
                 <input checked={item?.isDone || false} type={"checkbox"} onChange={() => updateSubTaskStatus(item)} />
 
-                {isEdditing ? (
+                {isEditing ? (
                     <input type={"text"}
                            defaultValue={item?.text}
                            autoFocus={true}
+                           onBlur={() => setIsEditing(false)}
                            onKeyDown={(e) => {
                                if(e.key === 'Enter') {
                                    e.preventDefault();
@@ -59,7 +66,7 @@ const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, se
 
                 <button type={'button'} onClick={() => setActiveInputId(item.id)} className={`text-xs hover:scale-105 cursor-pointer hover:"`}>➕</button>
 
-                <button type={'button'} onClick={() => onRemoveChild(item)} className={`text-xs hover:scale-105 cursor-pointer`}>🗑️</button>
+                <button type={'button'} onClick={() => deleteSubItem(item)} className={`text-xs hover:scale-105 cursor-pointer`}>🗑️</button>
 
             </div>
 
@@ -74,7 +81,7 @@ const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, se
 
                                 <div className={`absolute w-0.5 bg-slate-300 ${isLast ? 'h-4' : 'h-full'}`}></div>
 
-                                <InteractiveTreeNode item={subChild} onAddChild={onAddChild} onRemoveChild={onRemoveChild} fetchTreeData={fetchTreeData} activeInputId={activeInputId} setActiveInputId={setActiveInputId} />
+                                <InteractiveTreeNode item={subChild} onAddChild={onAddChild} fetchTreeData={fetchTreeData} activeInputId={activeInputId} setActiveInputId={setActiveInputId} />
                             </div>
                         )
                     })}
@@ -85,6 +92,7 @@ const InteractiveTreeNode = ({item, onAddChild, onRemoveChild, activeInputId, se
 
                 <input type={"text"}
                        autoFocus={true}
+                       onBlur={() => setActiveInputId(null)}
                        onKeyDown={(e) => {
                            if(e.key === 'Enter') {
                                e.preventDefault();
