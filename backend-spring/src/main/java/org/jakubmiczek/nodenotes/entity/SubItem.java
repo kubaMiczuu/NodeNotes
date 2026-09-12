@@ -29,6 +29,7 @@ public class SubItem {
     private SubItem parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("subItemId ASC")
     private List<SubItem> children;
 
     @ManyToOne

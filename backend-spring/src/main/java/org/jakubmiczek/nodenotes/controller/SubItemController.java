@@ -3,7 +3,6 @@ package org.jakubmiczek.nodenotes.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jakubmiczek.nodenotes.controller.dto.SubItemRequest;
-import org.jakubmiczek.nodenotes.controller.dto.SubItemUpdateRequest;
 import org.jakubmiczek.nodenotes.entity.SubItem;
 import org.jakubmiczek.nodenotes.service.SubItemService;
 import org.springframework.http.HttpStatus;
@@ -32,12 +31,20 @@ class SubItemController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping("/subitems/{id}")
-    public ResponseEntity<SubItem> updateSubItem(@Valid @RequestBody SubItemUpdateRequest subItemUpdateRequest, @PathVariable("id") Long id, Principal principal) {
-        subItemService.updateSubItem(subItemUpdateRequest, id, principal.getName());
+    @PatchMapping("/subitems/{id}/text")
+    public ResponseEntity<SubItem> updateSubItemText(@RequestParam String text, @PathVariable("id") Long id, Principal principal) {
+        subItemService.updateSubItemText(text, id, principal.getName());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @PatchMapping("/subitems/{id}/status")
+    public ResponseEntity<SubItem> updateSubItemStatus(@RequestParam boolean isDone, @PathVariable("id") Long id, Principal principal) {
+        subItemService.updateSubItemStatus(isDone, id, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 
     @DeleteMapping("/subitems/{id}")
     public ResponseEntity<SubItem> deleteSubItem(@PathVariable("id") Long id, Principal principal) {

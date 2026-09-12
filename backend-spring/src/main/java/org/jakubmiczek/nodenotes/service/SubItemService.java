@@ -1,7 +1,6 @@
 package org.jakubmiczek.nodenotes.service;
 
 import org.jakubmiczek.nodenotes.controller.dto.SubItemRequest;
-import org.jakubmiczek.nodenotes.controller.dto.SubItemUpdateRequest;
 import org.jakubmiczek.nodenotes.entity.SubItem;
 import org.jakubmiczek.nodenotes.entity.Task;
 import org.jakubmiczek.nodenotes.entity.TaskStatus;
@@ -53,17 +52,28 @@ public class SubItemService {
         subItemRepository.save(subItem);
     }
 
-    public void updateSubItem(SubItemUpdateRequest updateRequest, Long subItemId, String currentUsername) {
+    public void updateSubItemText(String text, Long subItemId, String currentUsername) {
         SubItem subItem =  subItemRepository.findById(subItemId)
                 .orElseThrow(() -> new SubItemDoesNotExistException(subItemId));
 
         Task task = subItem.getTask();
         if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
 
-        subItem.setText(updateRequest.text());
-        subItem.setDone(updateRequest.isDone());
+        subItem.setText(text);
 
-        if(updateRequest.isDone()) markAllChildrenAsDone(subItem);
+        subItemRepository.save(subItem);
+    }
+
+    public void updateSubItemStatus(boolean isDone, Long subItemId, String currentUsername) {
+        SubItem subItem =  subItemRepository.findById(subItemId)
+                .orElseThrow(() -> new SubItemDoesNotExistException(subItemId));
+
+        Task task = subItem.getTask();
+        if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
+
+        subItem.setDone(!isDone);
+
+        if(!isDone) markAllChildrenAsDone(subItem);
 
         task.setStatus(updateTaskStatus(subItem.getTask()));
 

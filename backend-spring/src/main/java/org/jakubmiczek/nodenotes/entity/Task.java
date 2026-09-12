@@ -53,5 +53,6 @@ public class Task {
     private User user;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("subItemId ASC")
     private List<SubItem> items;
 }
