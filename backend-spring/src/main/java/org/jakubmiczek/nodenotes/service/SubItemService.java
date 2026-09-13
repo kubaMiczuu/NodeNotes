@@ -1,5 +1,6 @@
 package org.jakubmiczek.nodenotes.service;
 
+import lombok.RequiredArgsConstructor;
 import org.jakubmiczek.nodenotes.controller.dto.SubItemRequest;
 import org.jakubmiczek.nodenotes.entity.SubItem;
 import org.jakubmiczek.nodenotes.entity.Task;
@@ -10,21 +11,20 @@ import org.jakubmiczek.nodenotes.exception.TaskDoesNotExistException;
 import org.jakubmiczek.nodenotes.repository.SubItemRepository;
 import org.jakubmiczek.nodenotes.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SubItemService {
 
     private final SubItemRepository subItemRepository;
     private final TaskRepository taskRepository;
 
-    public SubItemService(SubItemRepository subItemRepository, TaskRepository taskRepository) {
-        this.subItemRepository = subItemRepository;
-        this.taskRepository = taskRepository;
-    }
-
+    @Transactional
     public void addSubItem(SubItemRequest subItemRequest, Long parentId, Long taskId, String currentUsername) {
         SubItem subItem = new SubItem();
         subItem.setText(subItemRequest.text());
@@ -52,6 +52,7 @@ public class SubItemService {
         subItemRepository.save(subItem);
     }
 
+    @Transactional
     public void updateSubItemText(String text, Long subItemId, String currentUsername) {
         SubItem subItem =  subItemRepository.findById(subItemId)
                 .orElseThrow(() -> new SubItemDoesNotExistException(subItemId));
@@ -60,10 +61,9 @@ public class SubItemService {
         if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
 
         subItem.setText(text);
-
-        subItemRepository.save(subItem);
     }
 
+    @Transactional
     public void updateSubItemStatus(boolean isDone, Long subItemId, String currentUsername) {
         SubItem subItem =  subItemRepository.findById(subItemId)
                 .orElseThrow(() -> new SubItemDoesNotExistException(subItemId));
@@ -75,11 +75,10 @@ public class SubItemService {
 
         if(!isDone) markAllChildrenAsDone(subItem);
 
-        task.setStatus(updateTaskStatus(subItem.getTask()));
-
-        subItemRepository.save(subItem);
+        task.setStatus(returnCalculatedTaskStatus(subItem.getTask()));
     }
 
+    @Transactional
     public void deleteSubItem(Long subItemId, String currentUsername) {
         SubItem subItem =  subItemRepository.findById(subItemId)
                 .orElseThrow(() -> new SubItemDoesNotExistException(subItemId));
@@ -97,7 +96,7 @@ public class SubItemService {
         }
     }
 
-    private TaskStatus updateTaskStatus(Task task) {
+    private TaskStatus returnCalculatedTaskStatus(Task task) {
         List<SubItem> items = task.getItems();
 
         int totalItems = 0;

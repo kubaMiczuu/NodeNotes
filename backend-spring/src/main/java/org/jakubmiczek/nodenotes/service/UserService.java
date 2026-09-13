@@ -1,5 +1,6 @@
 package org.jakubmiczek.nodenotes.service;
 
+import lombok.RequiredArgsConstructor;
 import org.jakubmiczek.nodenotes.controller.dto.UserPasswordUpdateRequest;
 import org.jakubmiczek.nodenotes.controller.dto.UserRequest;
 import org.jakubmiczek.nodenotes.controller.dto.UserResponse;
@@ -10,20 +11,19 @@ import org.jakubmiczek.nodenotes.repository.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
+    @Transactional
     public void addUser(UserRequest userRequest) {
         Optional<User> user = userRepository.findByUsername(userRequest.username());
         if (user.isPresent()) {
@@ -37,6 +37,7 @@ public class UserService {
         userRepository.save(newUser);
     }
 
+    @Transactional
     public void updateUserInfo(String currentUsername, String newUsername) {
         User user = getUserByUsername(currentUsername);
 
@@ -46,9 +47,9 @@ public class UserService {
         }
 
         user.setUsername(newUsername);
-        userRepository.save(user);
     }
 
+    @Transactional
     public void updatePassword(String currentUsername, UserPasswordUpdateRequest request) {
         User user = getUserByUsername(currentUsername);
 
@@ -57,11 +58,12 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
-        userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(String username) {
         User user = getUserByUsername(username);
+
         userRepository.delete(user);
     }
 

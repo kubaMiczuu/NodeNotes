@@ -1,5 +1,6 @@
 package org.jakubmiczek.nodenotes.service;
 
+import lombok.RequiredArgsConstructor;
 import org.jakubmiczek.nodenotes.controller.dto.SubItemResponse;
 import org.jakubmiczek.nodenotes.controller.dto.TaskRequest;
 import org.jakubmiczek.nodenotes.controller.dto.TaskResponse;
@@ -13,21 +14,20 @@ import org.jakubmiczek.nodenotes.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
-        this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
-    }
-
+    @Transactional
     public void addTask(TaskRequest taskRequest, String currentUsername) {
         Task newTask = new Task();
         newTask.setTitle(taskRequest.title());
@@ -44,6 +44,7 @@ public class TaskService {
         taskRepository.save(newTask);
     }
 
+    @Transactional
     public void updateTask(TaskUpdateRequest taskUpdateRequest, Long taskId, String currentUsername) {
         Task taskToUpdate = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskDoesNotExistException(taskId));
@@ -53,9 +54,9 @@ public class TaskService {
         taskToUpdate.setTitle(taskUpdateRequest.title());
         taskToUpdate.setDescription(taskUpdateRequest.description());
         taskToUpdate.setStatus(taskUpdateRequest.status());
-        taskRepository.save(taskToUpdate);
     }
 
+    @Transactional
     public void deleteTask(Long taskId, String currentUsername) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskDoesNotExistException(taskId));
@@ -64,6 +65,7 @@ public class TaskService {
 
         taskRepository.delete(task);
     }
+
     public Page<TaskResponse> getTasks(String username, TaskStatus taskStatus, TaskType type, String title, Pageable pageable) {
         Page<Task> desiredTasks = taskRepository.findTaskWithFilters(username, taskStatus, type, title, pageable);
 
