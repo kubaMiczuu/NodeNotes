@@ -122,7 +122,7 @@ const Dashboard = () => {
 
     }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus, filterType]);
 
-    const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL";
+    const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL" || filterType !== "ALL";
 
     const renderContent = () => {
         if (isLoading) {
@@ -139,7 +139,7 @@ const Dashboard = () => {
                     <div className="flex flex-col items-center mt-20">
                         <h2 className="text-3xl font-bold text-slate-800">No tasks found!</h2>
                         <p className="text-slate-500 mt-2">Try adjusting your filters or search query.</p>
-                        <button onClick={() => { setSearchQuery(""); setFilterStatus("ALL"); }}
+                        <button onClick={() => { setSearchQuery(""); setFilterStatus("ALL");  setFilterType("ALL")}}
                         className={'mt-4 bg-sky-400 text-white px-4 py-2 rounded-lg cursor-pointer hover:scale-105 transition font-bold'}>
                             Clear Filters
                         </button>
