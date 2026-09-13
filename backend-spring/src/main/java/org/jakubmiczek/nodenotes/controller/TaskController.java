@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +38,11 @@ public class TaskController {
         taskService.importTask(taskImportRequest, principal.getName());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/import/all")
+    public ResponseEntity<Void> importAllTasks(@Valid @RequestBody TaskImportRequest taskImportRequest, Principal principal) {
+        return null;
     }
 
     @PutMapping("/{id}")
@@ -67,5 +73,10 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(taskService.getTaskById(id, principal.getName()));
+    }
+
+    @GetMapping("/export/all")
+    public ResponseEntity<List<TaskResponse>> getAllTasks(Principal principal) {
+        return ResponseEntity.ok(taskService.getAllTasks(principal.getName()));
     }
 }

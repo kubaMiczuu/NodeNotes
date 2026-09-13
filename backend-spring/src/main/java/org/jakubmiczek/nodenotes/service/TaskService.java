@@ -110,6 +110,15 @@ public class TaskService {
         return mapSingleTaskToResponse(task);
     }
 
+    public List<TaskResponse> getAllTasks(String currentUsername) {
+        List<Task> allTasks= taskRepository.findAllByUser_Username(currentUsername);
+
+        List<TaskResponse> taskResponses = new ArrayList<>();
+        allTasks.forEach(task -> taskResponses.add(mapSingleTaskToResponse(task)));
+
+        return taskResponses;
+    }
+
     private SubItem mapDtoToSubItemEntity(SubItemResponse dto, Task task, SubItem parent) {
         SubItem subItem = new SubItem();
         subItem.setText(dto.text());

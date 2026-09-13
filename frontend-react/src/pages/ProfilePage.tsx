@@ -6,6 +6,8 @@ import DeleteConfirmOverlay from "../components/common/DeleteConfirmOverlay.tsx"
 import Modal from "../components/common/Modal.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
 import {AuthContext} from "../context/AuthContext.tsx";
+import type {TaskData} from "../types/task.ts";
+import {exportTasks} from "../utils/exportTasks.ts";
 
 const ProfilePage = () => {
 
@@ -18,6 +20,8 @@ const ProfilePage = () => {
     const [inProgressTasks, setInProgressTasks] = useState<number>(0);
     const [doneTasks, setDoneTasks] = useState<number>(0);
 
+    const [allTasks, setAllTasks] = useState<TaskData | null>(null);
+
     const {checkSession} = useContext(AuthContext)
 
     const handleDeleteProfile = async () => {
@@ -26,6 +30,18 @@ const ProfilePage = () => {
         })
 
         await checkSession();
+    }
+
+    const handleExportAll = async () => {
+        axiosClient.get("/tasks/export/all")
+            .then((response) => {
+                setAllTasks(response.data);
+                exportTasks(allTasks, false);
+            })
+    }
+
+    const handleImportAll = async () => {
+
     }
 
     useEffect(() => {
@@ -75,7 +91,7 @@ const ProfilePage = () => {
 
                 <ProfileInformation username={username} />
 
-                <div className={`h-2/7 grid grid-cols-2 md:grid-cols-4 gap-6 p-4`}>
+                <div className={`h-3/7 grid grid-cols-2 md:grid-cols-4 gap-6 p-4`}>
 
                     <ProfileStatCard status={"OVERALL"} value={overallTasks} />
 
@@ -87,7 +103,20 @@ const ProfilePage = () => {
 
                 </div>
 
-                <div className={`h-1/7 grid grid-cols-1 md:grid-cols-3 gap-6 p-4 mt-16`}>
+                <div className={`flex gap-3 justify-around h-1/7`}>
+                    <button type={"button"} onClick={() => handleImportAll()}
+                            className="text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer"
+                        >Import all task!
+                    </button>
+
+                    <button type={"button"} onClick={() => handleExportAll()}
+                            className="text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer">
+                        Export all task!
+                    </button>
+
+                </div>
+
+                <div className={`h-2/7 grid grid-cols-1 md:grid-cols-3 gap-6 p-4 mt-16`}>
 
                     <button onClick={() => setModalMode("EDIT")} className="font-extrabold tracking-wider text-center w-full text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
                         Edit profile

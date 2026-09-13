@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
@@ -25,4 +27,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             Pageable pageable
     );
 
+    List<Task> findAllByUser_Username(String currentUsername);
 }

@@ -7,6 +7,7 @@ import {axiosClient} from "../api/axiosClient.ts";
 import Pagination from "../components/Pagination.tsx";
 import {useDebounce} from "../hooks/useDebounce.ts";
 import TreeTaskCard from "../components/TreeTaskCard.tsx";
+import {exportTasks} from "../utils/exportTasks.ts";
 
 const Dashboard = () => {
 
@@ -52,18 +53,7 @@ const Dashboard = () => {
     }
 
     const handleExportClick = (taskToExport:TaskData | null | undefined) => {
-        const jsonTask = JSON.stringify(taskToExport, null, 2);
-        const blob = new Blob([jsonTask], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.download = taskToExport?.title ? `${taskToExport?.title.replace(/\s+/g, '_')}.json` : "task.json";
-
-        document.body.appendChild(link);
-        link.click();
-
-        URL.revokeObjectURL(url);
+        exportTasks(taskToExport, true);
     }
 
     const handleCancelClick = () => {
