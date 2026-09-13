@@ -29,8 +29,8 @@ const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
 
     const config = statusConfig[task.status];
 
-    const creationDate:string = `${task.createdAt?.substring(0, 10)}`
-    const updateDate:string = `${task.updatedAt?.substring(0, 10)}`
+    const creationDate = new Date(task.createdAt + "Z").toLocaleDateString();
+    const updateDate = new Date(task.updatedAt + "Z").toLocaleDateString();
 
     const taskCompletionProgress = calculateTreeTaskProgress(task.children);
 
