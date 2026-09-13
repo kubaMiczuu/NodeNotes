@@ -2,6 +2,7 @@ package org.jakubmiczek.nodenotes.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jakubmiczek.nodenotes.controller.dto.TaskImportRequest;
 import org.jakubmiczek.nodenotes.controller.dto.TaskRequest;
 import org.jakubmiczek.nodenotes.controller.dto.TaskResponse;
 import org.jakubmiczek.nodenotes.controller.dto.TaskUpdateRequest;
@@ -27,6 +28,13 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<Void> createTask(@Valid @RequestBody TaskRequest taskRequest, Principal principal) {
         taskService.addTask(taskRequest, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<Void> importTask(@Valid @RequestBody TaskImportRequest taskImportRequest, Principal principal) {
+        taskService.importTask(taskImportRequest, principal.getName());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

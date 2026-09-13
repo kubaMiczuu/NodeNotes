@@ -1,10 +1,7 @@
 package org.jakubmiczek.nodenotes.service;
 
 import lombok.RequiredArgsConstructor;
-import org.jakubmiczek.nodenotes.controller.dto.SubItemResponse;
-import org.jakubmiczek.nodenotes.controller.dto.TaskRequest;
-import org.jakubmiczek.nodenotes.controller.dto.TaskResponse;
-import org.jakubmiczek.nodenotes.controller.dto.TaskUpdateRequest;
+import org.jakubmiczek.nodenotes.controller.dto.*;
 import org.jakubmiczek.nodenotes.entity.*;
 import org.jakubmiczek.nodenotes.exception.TaskAccessDeniedException;
 import org.jakubmiczek.nodenotes.exception.TaskDoesNotExistException;
@@ -16,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -68,6 +66,35 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
+    @Transactional
+    public void importTask(TaskImportRequest taskImportRequest, String currentUsername) {
+        Task task = new Task();
+        task.setTitle(taskImportRequest.title());
+        task.setDescription(taskImportRequest.description());
+        task.setStatus(taskImportRequest.status());
+        task.setType(taskImportRequest.type());
+
+        List<SubItem> newTaskItems = new ArrayList<>();
+        if(taskImportRequest.children() != null) {
+
+            for(SubItemResponse child: taskImportRequest.children()) {
+                SubItem rootItem = mapDtoToSubItemEntity(child, task, null);
+                newTaskItems.add(rootItem);
+            }
+
+        }
+
+        task.setItems(newTaskItems);
+
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UserDoesNotExistException(currentUsername));
+
+        task.setUser(user);
+
+        taskRepository.save(task);
+
+    }
+
     public Page<TaskResponse> getTasks(String username, TaskStatus taskStatus, TaskType type, String title, Pageable pageable) {
         Page<Task> desiredTasks = taskRepository.findTaskWithFilters(username, taskStatus, type, title, pageable);
 
@@ -81,6 +108,28 @@ public class TaskService {
         if(!task.getUser().getUsername().equals(currentUsername)) throw new TaskAccessDeniedException();
 
         return mapSingleTaskToResponse(task);
+    }
+
+    private SubItem mapDtoToSubItemEntity(SubItemResponse dto, Task task, SubItem parent) {
+        SubItem subItem = new SubItem();
+        subItem.setText(dto.text());
+        subItem.setDone(dto.isDone());
+        subItem.setTask(task);
+        subItem.setParent(parent);
+
+        List<SubItem> newChildrenList = new ArrayList<>();
+
+        if(dto.children() != null) {
+            for(SubItemResponse child: dto.children()) {
+                SubItem mappedChild = mapDtoToSubItemEntity(child, task, subItem);
+
+                newChildrenList.add(mappedChild);
+            }
+        }
+
+        subItem.setChildren(newChildrenList);
+
+        return subItem;
     }
 
     private TaskResponse mapSingleTaskToResponse(Task task) {
