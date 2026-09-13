@@ -32,6 +32,25 @@ const Dashboard = () => {
         setModalMode("ADD");
     }
 
+    const handleImportClick = () => {
+
+    }
+
+    const handleExportClick = (taskToExport:TaskData | null | undefined) => {
+        const jsonTask = JSON.stringify(taskToExport, null, 2);
+        const blob = new Blob([jsonTask], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = taskToExport?.title ? `${taskToExport?.title.replace(/\s+/g, '_')}.json` : "task.json";
+        link.click();
+
+        document.body.appendChild(link);
+
+        URL.revokeObjectURL(url);
+    }
+
     const handleCancelClick = () => {
         setSelectedTask(null);
         setModalMode(null);
@@ -147,14 +166,14 @@ const Dashboard = () => {
         <div className="flex justify-between px-4 cursor-default">
             <div className="flex flex-col w-full max-w-5xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-4">
                 
-                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} currentType={filterType} onAddClick={handleAddClick} onSearchChange={handleSearchChange} onFilterChange={handleStatusFilterChange} onTypeChange={handleTypeFilterChange}/>
+                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} currentType={filterType} onAddClick={handleAddClick} onImportClick={handleImportClick} onSearchChange={handleSearchChange} onFilterChange={handleStatusFilterChange} onTypeChange={handleTypeFilterChange}/>
 
                 {renderContent()}
 
             </div>
 
             {modalMode !== null && (
-                <TaskFormModal mode={modalMode} initialData={selectedTask} onCancel={() => handleCancelClick()} onSuccess={() => setRefreshTrigger(prev => prev+1)} />
+                <TaskFormModal mode={modalMode} initialData={selectedTask} onExport={handleExportClick} onCancel={() => handleCancelClick()} onSuccess={() => setRefreshTrigger(prev => prev+1)} />
             )}
         </div>
     )

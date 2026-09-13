@@ -17,6 +17,7 @@ import InteractiveTreeContainer from "./InteractiveTreeContainer.tsx";
 interface TaskFormModalProps {
     mode: "UPDATE" | "ADD";
     initialData?: TaskData | null;
+    onExport: (task: TaskData | null | undefined) => void;
     onCancel: () => void;
     onSuccess: () => void;
 }
@@ -35,7 +36,7 @@ const modeConfig = {
     }
 }
 
-const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalProps) => {
+const TaskFormModal = ({mode, initialData, onExport, onCancel, onSuccess}:TaskFormModalProps) => {
 
     const config = modeConfig[mode];
 
@@ -136,14 +137,25 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
 
                 </div>
 
-                <div className={`flex flex-col-reverse md:flex-row items-center gap-4  mt-4 md:mt-16 w-full ${mode === "UPDATE" ? "justify-between" : "justify-center"}`}>
+                <div className={`flex flex-col-reverse md:flex-row items-baseline gap-4 mt-4 mb-4 md:mt-16 w-full ${mode === "UPDATE" ? "justify-between" : "justify-center"}`}>
 
                     {mode === "UPDATE" && (
-                        <button className="text-xl w-full md:w-auto px-6 py-2 text-rose-600 font-bold bg-rose-50 hover:bg-rose-100 hover:scale-105 rounded-lg transition cursor-pointer"
-                                onClick={() => setShowDeleteConfirm(true)} type={'button'}
-                        >
-                            Delete task
-                        </button>
+                        <div className={`flex gap-4 justify-center`}>
+
+                            <button className="text-xl w-full md:w-auto px-6 py-2 text-rose-600 font-bold bg-rose-50 hover:bg-rose-100 hover:scale-105 rounded-lg transition cursor-pointer"
+                                    onClick={() => setShowDeleteConfirm(true)} type={'button'}
+                            >
+                                Delete task
+                            </button>
+
+
+                            <button className="text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer"
+                                    onClick={() => onExport(initialData)} type={'button'}
+                            >
+                                Export task
+                            </button>
+                        </div>
+
                     )}
 
                     <ModalFooter onCancel={onCancel} submitText={config.buttonText} />
