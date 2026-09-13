@@ -53,7 +53,9 @@ public class TaskService {
 
         taskToUpdate.setTitle(taskUpdateRequest.title());
         taskToUpdate.setDescription(taskUpdateRequest.description());
-        taskToUpdate.setStatus(taskUpdateRequest.status());
+        if(taskToUpdate.getType() == TaskType.NOTE) {
+            taskToUpdate.setStatus(taskUpdateRequest.status());
+        }
     }
 
     @Transactional
