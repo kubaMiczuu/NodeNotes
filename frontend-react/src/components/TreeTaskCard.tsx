@@ -35,7 +35,7 @@ const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
     const taskCompletionProgress = calculateTreeTaskProgress(task.children);
 
     return (
-        <article className={`flex flex-col h-full rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer ${config.border}`}>
+        <article className={`flex flex-col h-full rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
 
             <div className="flex justify-between w-full">
 
@@ -59,14 +59,13 @@ const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
                 {task.title}
             </h1>
 
-            <div className={`max-h-32 ${totalTasks > 3 ? "md:max-h-32" : "md:max-h-84"} overflow-hidden relative`}>
+            <div className={`max-h-32 ${totalTasks > 3 ? "md:max-h-32" : "md:max-h-84"} overflow-hidden`}>
                 {task.children?.map((child:SubItemData) => (
                     <TreeNode child={child}/>
                 ))}
-
-                <div className={`h-12 absolute bottom-0 w-full bg-linear-to-t from-white to-transparent`} />
             </div>
 
+            <div className={`absolute h-20 bottom-0 left-0 w-full bg-linear-to-t from-white to-transparent pointer-events-none`} />
         </article>
     )
 }

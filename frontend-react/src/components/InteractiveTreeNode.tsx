@@ -64,7 +64,7 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
                 )}
 
 
-                <button type={'button'} onClick={() => setActiveInputId(item.id)} className={`text-xs hover:scale-105 cursor-pointer hover:"`}>➕</button>
+                <button type={'button'} onClick={() => setActiveInputId(item.id)} className={`text-xs hover:scale-105 cursor-pointer"`}>➕</button>
 
                 <button type={'button'} onClick={() => deleteSubItem(item)} className={`text-xs hover:scale-105 cursor-pointer`}>🗑️</button>
 
