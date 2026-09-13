@@ -41,8 +41,10 @@ public class TaskController {
     }
 
     @PostMapping("/import/all")
-    public ResponseEntity<Void> importAllTasks(@Valid @RequestBody TaskImportRequest taskImportRequest, Principal principal) {
-        return null;
+    public ResponseEntity<Void> importAllTasks(@Valid @RequestBody List<TaskImportRequest> taskImportRequests, Principal principal) {
+        taskService.importAllTasks(taskImportRequests, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")

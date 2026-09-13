@@ -1,12 +1,11 @@
 import ProfileInformation from "../components/ProfileInformation.tsx";
 import ProfileStatCard from "../components/ProfileStatCard.tsx";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import ProfileFormModal from "../components/ProfileFormModal.tsx";
 import DeleteConfirmOverlay from "../components/common/DeleteConfirmOverlay.tsx";
 import Modal from "../components/common/Modal.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
 import {AuthContext} from "../context/AuthContext.tsx";
-import type {TaskData} from "../types/task.ts";
 import {exportTasks} from "../utils/exportTasks.ts";
 
 const ProfilePage = () => {
@@ -20,9 +19,11 @@ const ProfilePage = () => {
     const [inProgressTasks, setInProgressTasks] = useState<number>(0);
     const [doneTasks, setDoneTasks] = useState<number>(0);
 
-    const [allTasks, setAllTasks] = useState<TaskData | null>(null);
+    const [isImported, setIsImported] = useState<boolean>(false);
 
     const {checkSession} = useContext(AuthContext)
+
+    const fileImportRef = useRef<HTMLInputElement>(null);
 
     const handleDeleteProfile = async () => {
         await axiosClient.delete("/users/me").then(() => {
@@ -35,13 +36,27 @@ const ProfilePage = () => {
     const handleExportAll = async () => {
         axiosClient.get("/tasks/export/all")
             .then((response) => {
-                setAllTasks(response.data);
-                exportTasks(allTasks, false);
+                exportTasks(response.data, false);
             })
     }
 
-    const handleImportAll = async () => {
+    const handleImportAll = async (file:File) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const fileContent = e.target?.result as string;
+                const parsedData = JSON.parse(fileContent);
 
+                await axiosClient.post("/tasks/import/all", parsedData);
+
+                setIsImported(true);
+
+            } catch (error) {
+                console.error("Import error: ", error);
+            }
+        }
+
+        reader.readAsText(file);
     }
 
     useEffect(() => {
@@ -81,7 +96,7 @@ const ProfilePage = () => {
             .then((response) => {
                 setDoneTasks(response.data.totalElements);
             })
-    }, [])
+    }, [isImported])
 
     return (
 
@@ -104,10 +119,17 @@ const ProfilePage = () => {
                 </div>
 
                 <div className={`flex gap-3 justify-around h-1/7`}>
-                    <button type={"button"} onClick={() => handleImportAll()}
+                    <button type={"button"} onClick={() => fileImportRef.current?.click()}
                             className="text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer"
                         >Import all task!
                     </button>
+                    <input type="file" accept=".json" ref={fileImportRef} className="hidden" onChange={(e) => {
+                        const file:File | undefined = e.target.files?.[0];
+                        if (file) {
+                            handleImportAll(file)
+                        }
+                        e.target.value = "";
+                    }} />
 
                     <button type={"button"} onClick={() => handleExportAll()}
                             className="text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer">

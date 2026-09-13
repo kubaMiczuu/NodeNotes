@@ -95,6 +95,13 @@ public class TaskService {
 
     }
 
+    @Transactional
+    public void importAllTasks(List<TaskImportRequest> taskImportRequests, String currentUsername) {
+        for (TaskImportRequest importRequest : taskImportRequests) {
+            importTask(importRequest, currentUsername);
+        }
+    }
+
     public Page<TaskResponse> getTasks(String username, TaskStatus taskStatus, TaskType type, String title, Pageable pageable) {
         Page<Task> desiredTasks = taskRepository.findTaskWithFilters(username, taskStatus, type, title, pageable);
 
