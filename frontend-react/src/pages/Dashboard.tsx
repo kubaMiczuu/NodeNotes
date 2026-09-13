@@ -20,6 +20,7 @@ const Dashboard = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const debouncedSearchQuery = useDebounce(searchQuery, 300) || "";
     const [filterStatus, setFilterStatus] = useState<"ALL" | "TODO" | "IN_PROGRESS" | "DONE">("ALL");
+    const [filterType, setFilterType] = useState<"ALL" | "NOTE" | "TREE">("ALL");
 
     const handleUpdateClick = (task: TaskData) => {
         setSelectedTask(task);
@@ -42,17 +43,21 @@ const Dashboard = () => {
         setSearchQuery(newQuery);
     }
 
-    const handleFilterChange = (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => {
+    const handleStatusFilterChange = (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => {
         setCurrentPage(0);
         setFilterStatus(newStatus);
+    }
 
+    const handleTypeFilterChange = (newType:"ALL" | "NOTE" | "TREE") => {
+        setCurrentPage(0);
+        setFilterType(newType);
     }
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
 
-            const requestParams: { page: number; size: number, status?: string, title?: string } = {
+            const requestParams: { page: number; size: number, status?: string, type?:string, title?: string } = {
                 page: currentPage,
                 size: 6
             };
@@ -62,6 +67,9 @@ const Dashboard = () => {
             }
             if (filterStatus !== "ALL") {
                 requestParams.status = filterStatus;
+            }
+            if (filterType !== "ALL") {
+                requestParams.type = filterType;
             }
 
             axiosClient.get("/tasks", {
@@ -78,7 +86,7 @@ const Dashboard = () => {
 
         void fetchData();
 
-    }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus]);
+    }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus, filterType]);
 
     const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL";
 
@@ -128,7 +136,7 @@ const Dashboard = () => {
                     ))}
                 </ul>
 
-                <div className="mt-3 p-4 flex items-center justify-center text-slate-400">
+                <div className="mt-2 p-3 flex items-center justify-center text-slate-400">
                     <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
                 </div>
             </>
@@ -137,9 +145,9 @@ const Dashboard = () => {
 
     return (
         <div className="flex justify-between px-4 cursor-default">
-            <div className="flex flex-col w-full max-w-5xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-6">
+            <div className="flex flex-col w-full max-w-5xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-4">
                 
-                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} onAddClick={handleAddClick} onSearchChange={handleSearchChange} onFilterChange={handleFilterChange}/>
+                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} currentType={filterType} onAddClick={handleAddClick} onSearchChange={handleSearchChange} onFilterChange={handleStatusFilterChange} onTypeChange={handleTypeFilterChange}/>
 
                 {renderContent()}
 
