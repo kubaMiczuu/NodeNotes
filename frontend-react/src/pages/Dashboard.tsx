@@ -32,8 +32,23 @@ const Dashboard = () => {
         setModalMode("ADD");
     }
 
-    const handleImportClick = () => {
+    const handleImportClick = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const fileContent = e.target?.result as string;
+                const parsedData = JSON.parse(fileContent);
 
+                await axiosClient.post("/tasks/import", parsedData);
+
+                setRefreshTrigger(prev => prev+1);
+
+            } catch (error) {
+                console.error("Import error: ", error);
+            }
+        }
+
+        reader.readAsText(file);
     }
 
     const handleExportClick = (taskToExport:TaskData | null | undefined) => {
@@ -44,9 +59,9 @@ const Dashboard = () => {
 
         link.href = url;
         link.download = taskToExport?.title ? `${taskToExport?.title.replace(/\s+/g, '_')}.json` : "task.json";
-        link.click();
 
         document.body.appendChild(link);
+        link.click();
 
         URL.revokeObjectURL(url);
     }

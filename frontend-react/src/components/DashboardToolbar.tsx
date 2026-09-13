@@ -1,21 +1,38 @@
+import {useRef} from "react";
+
 interface DashboardToolbarProps {
     currentQuery: string;
     currentFilter: "ALL" | "TODO" | "IN_PROGRESS" | "DONE";
     currentType: "ALL" | "NOTE" | "TREE";
     onAddClick: () => void;
+    onImportClick: (file: File) => void;
     onSearchChange: (newQuery:string) => void;
     onFilterChange: (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => void;
     onTypeChange: (newType:"ALL" | "NOTE" | "TREE") => void;
 }
 
-const DashboardToolbar = ({currentQuery, currentFilter, currentType, onAddClick, onSearchChange, onFilterChange, onTypeChange}: DashboardToolbarProps) => {
+const DashboardToolbar = ({currentQuery, currentFilter, currentType, onAddClick, onImportClick, onSearchChange, onFilterChange, onTypeChange}: DashboardToolbarProps) => {
+
+    const fileImportRef = useRef<HTMLInputElement>(null);
+
     return (
         <div className={`flex flex-col p-4 pt-1`}>
             <div className="flex flex-col md:flex-row justify-center gap-4 p-3">
 
-                <button onClick={() => onAddClick()} className="font-extrabold tracking-wider text-center w-full md:w-1/2 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
-                    Click me to add new task!
+                <button onClick={() => onAddClick()} className="font-extrabold tracking-wider text-center w-full md:w-5/8 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
+                    Create a new task!
                 </button>
+
+                <button type={"button"} onClick={() => fileImportRef.current?.click()} className="font-extrabold tracking-wider text-center w-full md:w-3/8 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
+                    Import task!
+                </button>
+                <input type="file" accept=".json" ref={fileImportRef} className="hidden" onChange={(e) => {
+                    const file:File | undefined = e.target.files?.[0];
+                    if (file) {
+                        onImportClick(file)
+                    }
+                    e.target.value = "";
+                }} />
 
                 <input value={currentQuery} onChange={(e) => {onSearchChange(e.target.value)}} placeholder={'Search for tasks...'} className={`border border-slate-200 rounded-lg p-2 w-full md:w-1/3 text-slate-500 focus:outline-none`}/>
 
