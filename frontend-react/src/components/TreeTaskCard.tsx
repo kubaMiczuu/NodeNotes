@@ -4,7 +4,6 @@ import {calculateTreeTaskProgress} from "../utils/calculateTreeTaskProgress.ts";
 
 interface TaskCardProps {
     task: TaskData;
-    totalTasks: number;
 }
 
 const statusConfig = {
@@ -25,7 +24,7 @@ const statusConfig = {
     }
 };
 
-const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
+const TreeTaskCard = ({task}:TaskCardProps) => {
 
     const config = statusConfig[task.status];
 
@@ -35,7 +34,7 @@ const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
     const taskCompletionProgress = calculateTreeTaskProgress(task.children);
 
     return (
-        <article className={`flex flex-col h-full rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
+        <article className={`flex flex-col h-40 2xl:h-48 rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
 
             <div className="flex justify-between w-full">
 
@@ -59,7 +58,7 @@ const TreeTaskCard = ({task, totalTasks}:TaskCardProps) => {
                 {task.title}
             </h1>
 
-            <div className={`max-h-32 ${totalTasks > 3 ? "md:max-h-32" : "md:max-h-84"} overflow-hidden`}>
+            <div className={`flex-1 relative overflow-hidden`}>
                 {task.children?.map((child:SubItemData) => (
                     <TreeNode child={child}/>
                 ))}

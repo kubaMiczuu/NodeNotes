@@ -154,7 +154,7 @@ const Dashboard = () => {
                         <li key={task.id} className={`h-full block`} onClick={() => handleUpdateClick(task)}>
                             {task.type === "NOTE"
                                 ? <NoteTaskCard task={task} totalTasks={tasks.length} />
-                                : <TreeTaskCard task={task} totalTasks={tasks.length} />
+                                : <TreeTaskCard task={task} />
                             }
                         </li>
                     ))}

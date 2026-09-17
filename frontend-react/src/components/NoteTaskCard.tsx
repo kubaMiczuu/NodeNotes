@@ -33,7 +33,7 @@ const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
     const clampClass = totalTasks > 3 ? "line-clamp-4" : "line-clamp-16";
 
     return (
-        <article className={`flex flex-col h-full rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer ${config.border}`}>
+        <article className={`flex flex-col h-40 2xl:h-48 rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
 
             <div className="flex justify-between items-baseline w-full">
 
@@ -58,7 +58,7 @@ const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
                 {task.description}
             </p>
 
-
+            <div className={`absolute h-20 bottom-0 left-0 w-full bg-linear-to-t from-white to-transparent pointer-events-none`} />
         </article>
     )
 }
