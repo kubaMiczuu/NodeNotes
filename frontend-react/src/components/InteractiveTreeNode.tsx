@@ -13,6 +13,7 @@ interface TreeNodeProps {
 const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId, fetchTreeData}: TreeNodeProps) => {
 
     const isAddingChild = activeInputId === item.id;
+    const [isExpanded, setExpanded] = useState<boolean>(true);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const updateSubTaskStatus = async (itemToUpdate:SubItemData) => {
@@ -42,6 +43,19 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
 
                 <input checked={item?.isDone || false} type={"checkbox"} onChange={() => updateSubTaskStatus(item)} />
 
+                {item?.children && item.children.length > 0 && (
+                    <button type="button" onClick={() => setExpanded(!isExpanded)}
+                        className={`p-1 rounded-md hover:bg-slate-200 transition-colors cursor-pointer text-slate-400 hover:text-slate-600`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
+                            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-90" : "rotate-0"}`}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+                )}
+
+
                 {isEditing ? (
                     <input type={"text"}
                            defaultValue={item?.text}
@@ -70,7 +84,7 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
 
             </div>
 
-            {item?.children && item.children.length > 0 && (
+            {item?.children && item.children.length > 0 && isExpanded && (
                 <div className="ml-6 flex flex-col">
 
                     {item.children.map((subChild: SubItemData, index: number, arr: SubItemData[]) => {
