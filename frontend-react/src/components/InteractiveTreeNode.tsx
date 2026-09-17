@@ -36,14 +36,16 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
     }
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if(expandSignal > 0) setExpanded(true);
-    }, [expandSignal])
+        if(expandSignal == 0 &&  collapseSignal == 0) return;
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if(collapseSignal > 0) setExpanded(false);
-    }, [collapseSignal]);
+        if(expandSignal > collapseSignal) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setExpanded(true);
+        } else {
+            setExpanded(false);
+        }
+
+    }, [expandSignal, collapseSignal]);
 
     return (
         <>
