@@ -11,6 +11,8 @@ interface TreeContainerProps {
 const InteractiveTreeContainer = ({taskId, initialItems}:TreeContainerProps) => {
 
     const [items, setItems] = useState<SubItemData[] | undefined>(initialItems);
+    const [expandSignal, setExpandSignal] = useState<number>(0);
+    const [collapseSignal, setCollapseSignal] = useState<number>(0);
     const [activeInputId, setActiveInputId] = useState<number | null>(null);
 
     const fetchTreeData = async () => {
@@ -36,14 +38,24 @@ const InteractiveTreeContainer = ({taskId, initialItems}:TreeContainerProps) => 
     return (
         <div className={`flex flex-col w-full min-h-[calc(50vh-128px)] max-h-[calc(64vh-128px)]`}>
 
-            <label className={`text-md text-slate-700 font-bold`}>
-                Tree Architecture
-            </label>
+            <div className={`flex gap-10 items-center mb-2`}>
+
+                <label className={`text-md text-slate-700 font-bold`}>
+                    Tree Architecture
+                </label>
+
+                <button type={'button'} onClick={() => setExpandSignal(Date.now())}
+                        className={`p-2 rounded-lg hover:bg-slate-200 transition duration-500 cursor-pointer`}>Expand All</button>
+
+                <button type={'button'} onClick={() => setCollapseSignal(Date.now())}
+                        className={`p-2 rounded-lg hover:bg-slate-200 transition duration-500 cursor-pointer`}>Collapse All</button>
+
+            </div>
 
             <div className={`overflow-y-scroll w-full text-lg md:text-xl font-semibold text-slate-800 px-4 py-3 md:px-5 md:py-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 transition duration-200`}>
 
                 {items?.map((item: SubItemData) => (
-                    <InteractiveTreeNode key={item?.id} item={item} onAddChild={onAddChild}  activeInputId={activeInputId} setActiveInputId={setActiveInputId} fetchTreeData={fetchTreeData} />
+                    <InteractiveTreeNode key={item?.id} item={item} onAddChild={onAddChild}  activeInputId={activeInputId} setActiveInputId={setActiveInputId} fetchTreeData={fetchTreeData} expandSignal={expandSignal} collapseSignal={collapseSignal} />
                 ))}
 
                 <input type={"text"}

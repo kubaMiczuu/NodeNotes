@@ -1,6 +1,6 @@
 import type {SubItemData} from "../types/task.ts";
 import {axiosClient} from "../api/axiosClient.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 interface TreeNodeProps {
     item: SubItemData
@@ -8,9 +8,11 @@ interface TreeNodeProps {
     activeInputId: number | null,
     setActiveInputId: (id:number | null) => void,
     fetchTreeData: () => void,
+    expandSignal: number,
+    collapseSignal: number
 }
 
-const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId, fetchTreeData}: TreeNodeProps) => {
+const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId, fetchTreeData, expandSignal, collapseSignal}: TreeNodeProps) => {
 
     const isAddingChild = activeInputId === item.id;
     const [isExpanded, setExpanded] = useState<boolean>(true);
@@ -32,6 +34,16 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
         await axiosClient.delete(`/subitems/${itemToDelete?.id}`);
         fetchTreeData();
     }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if(expandSignal > 0) setExpanded(true);
+    }, [expandSignal])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if(collapseSignal > 0) setExpanded(false);
+    }, [collapseSignal]);
 
     return (
         <>
@@ -95,7 +107,7 @@ const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId,
 
                                 <div className={`absolute w-0.5 bg-slate-300 ${isLast ? 'h-4' : 'h-full'}`}></div>
 
-                                <InteractiveTreeNode item={subChild} onAddChild={onAddChild} fetchTreeData={fetchTreeData} activeInputId={activeInputId} setActiveInputId={setActiveInputId} />
+                                <InteractiveTreeNode item={subChild} onAddChild={onAddChild} fetchTreeData={fetchTreeData} activeInputId={activeInputId} setActiveInputId={setActiveInputId} expandSignal={expandSignal} collapseSignal={collapseSignal} />
                             </div>
                         )
                     })}
