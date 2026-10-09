@@ -15,8 +15,9 @@ interface TreeNodeProps {
 const InteractiveTreeNode = ({item, onAddChild, activeInputId, setActiveInputId, fetchTreeData, expandSignal, collapseSignal}: TreeNodeProps) => {
 
     const isAddingChild = activeInputId === item.id;
-    const [isExpanded, setExpanded] = useState<boolean>(true);
+    const [isExpanded, setExpanded] = useState<boolean>(!item.isDone);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+
 
     const updateSubTaskStatus = async (itemToUpdate:SubItemData) => {
         await axiosClient.patch(`/subitems/${itemToUpdate?.id}/status?isDone=${itemToUpdate.isDone}`);
