@@ -168,8 +168,8 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="flex justify-between px-4 cursor-default">
-            <div className="flex flex-col w-full max-w-5xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-4">
+        <div className="flex justify-between cursor-default">
+            <div className="flex flex-col w-full max-w-6xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-4">
                 
                 <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} currentType={filterType} onAddClick={handleAddClick} onImportClick={handleImportClick} onSearchChange={handleSearchChange} onFilterChange={handleStatusFilterChange} onTypeChange={handleTypeFilterChange}/>
 
