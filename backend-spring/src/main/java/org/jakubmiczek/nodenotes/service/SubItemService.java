@@ -73,7 +73,13 @@ public class SubItemService {
 
         subItem.setDone(!isDone);
 
-        if(!isDone) markAllChildrenAsDone(subItem);
+        if(!isDone) {
+            markAllChildrenAsDone(subItem);
+            checkAndMarkParentsAsDone(subItem);
+
+        } else {
+            unmarkParents(subItem);
+        }
 
         task.setStatus(returnCalculatedTaskStatus(subItem.getTask()));
     }
@@ -113,4 +119,26 @@ public class SubItemService {
         else return TaskStatus.IN_PROGRESS;
     }
 
+
+    private void unmarkParents(SubItem subItem) {
+        if(subItem.getParent() == null) return;
+
+        subItem.getParent().setDone(false);
+        unmarkParents(subItem.getParent());
+    }
+
+    private void checkAndMarkParentsAsDone(SubItem subItem) {
+        SubItem subItemParent = subItem.getParent();
+
+        if(subItemParent == null) return;
+
+
+        for(SubItem child : subItemParent.getChildren()) {
+            if(!child.isDone()) return;
+        }
+
+        subItemParent.setDone(true);
+        checkAndMarkParentsAsDone(subItemParent);
+
+    }
 }
