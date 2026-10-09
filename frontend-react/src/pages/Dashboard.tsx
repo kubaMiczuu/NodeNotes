@@ -151,10 +151,10 @@ const Dashboard = () => {
             <>
                 <ul className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
                     {tasks.map((task: TaskData) => (
-                        <li key={task.id} className={`h-full block`} onClick={() => handleUpdateClick(task)}>
+                        <li key={task.id} className={`h-full block`} >
                             {task.type === "NOTE"
-                                ? <NoteTaskCard task={task} totalTasks={tasks.length} />
-                                : <TreeTaskCard task={task} />
+                                ? <NoteTaskCard task={task} totalTasks={tasks.length} onClick={() => handleUpdateClick(task)} />
+                                : <TreeTaskCard task={task} onClick={() => handleUpdateClick(task)} />
                             }
                         </li>
                     ))}

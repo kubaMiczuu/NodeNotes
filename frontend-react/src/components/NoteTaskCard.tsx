@@ -3,6 +3,7 @@ import type {TaskData} from "../types/task.ts"
 interface TaskCardProps {
     task: TaskData;
     totalTasks: number;
+    onClick: () => void;
 }
 
 const statusConfig = {
@@ -23,7 +24,7 @@ const statusConfig = {
     }
 };
 
-const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
+const NoteTaskCard = ({task, totalTasks, onClick}:TaskCardProps) => {
 
     const config = statusConfig[task.status];
 
@@ -33,7 +34,7 @@ const NoteTaskCard = ({task, totalTasks}:TaskCardProps) => {
     const clampClass = totalTasks > 3 ? "line-clamp-4" : "line-clamp-16";
 
     return (
-        <article className={`flex flex-col h-40 2xl:h-48 rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
+        <article onClick={onClick} className={`flex flex-col h-40 2xl:h-48 rounded-xl border-2 p-3 shadow-lg hover:scale-105 transition cursor-pointer overflow-hidden relative ${config.border}`}>
 
             <div className="flex justify-between items-baseline w-full">
 
