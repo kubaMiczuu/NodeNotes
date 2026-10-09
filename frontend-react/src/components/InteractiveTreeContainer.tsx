@@ -58,19 +58,27 @@ const InteractiveTreeContainer = ({taskId, initialItems}:TreeContainerProps) => 
                     <InteractiveTreeNode key={item?.id} item={item} onAddChild={onAddChild}  activeInputId={activeInputId} setActiveInputId={setActiveInputId} fetchTreeData={fetchTreeData} expandSignal={expandSignal} collapseSignal={collapseSignal} />
                 ))}
 
-                <input type={"text"}
-                       autoFocus={true}
-                       onBlur={() => setActiveInputId(null)}
-                       onKeyDown={(e) => {
-                           if(e.key === 'Enter') {
-                               e.preventDefault();
-                               onAddChild(null, e.currentTarget.value);
-                               e.currentTarget.value = "";
-                           }
-                       }}
-                       placeholder={"➕ Add task node"}
-                       className={`outline-none text-slate-800`}
-                />
+                <div className={`flex items-center gap-2`}>
+
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" className="w-5 h-5 text-gray-500">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+
+                    <input type={"text"}
+                           autoFocus={true}
+                           onBlur={() => setActiveInputId(null)}
+                           onKeyDown={(e) => {
+                               if(e.key === 'Enter') {
+                                   e.preventDefault();
+                                   onAddChild(null, e.currentTarget.value);
+                                   e.currentTarget.value = "";
+                               }
+                           }}
+                           placeholder={"Add Task Node"}
+                           className={`outline-none text-slate-800`}
+                    />
+                </div>
 
             </div>
 
