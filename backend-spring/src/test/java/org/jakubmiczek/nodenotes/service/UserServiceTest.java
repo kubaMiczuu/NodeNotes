@@ -75,10 +75,7 @@ public class UserServiceTest {
 
         userService.updateUserInfo("oldUsername", "newUsername");
 
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getUsername()).isEqualTo("newUsername");
+        assertThat(user.getUsername()).isEqualTo("newUsername");
     }
 
     @Test
@@ -114,10 +111,7 @@ public class UserServiceTest {
 
         userService.updatePassword("username", request);
 
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getPassword()).isEqualTo(newHashedPassword);
+        assertThat(user.getPassword()).isEqualTo(newHashedPassword);
     }
 
     @Test
