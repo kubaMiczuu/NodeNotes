@@ -35,6 +35,15 @@ public class UserServiceTest {
     @InjectMocks
     UserService userService;
 
+    private User createUser(Long id, String username, String password) {
+        User user = new User();
+        user.setUserId(id);
+        user.setUsername(username);
+        user.setPassword(password);
+
+        return user;
+    }
+
     @Test
     void shouldAddUserCorrectly() {
         UserRequest userRequest = new UserRequest("username", "password");
@@ -54,9 +63,7 @@ public class UserServiceTest {
 
     @Test
     void shouldThrowUserAlreadyExistsExceptionWhenCreatingNewUser() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("username");
+        User user = createUser(1L, "username",  "password");
 
         when(userRepository.findByUsername("username")).thenReturn(Optional.of(user));
 
@@ -66,9 +73,7 @@ public class UserServiceTest {
 
     @Test
     void shouldUpdateUserInfoCorrectly() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("oldUsername");
+        User user = createUser(1L, "oldUsername",  "password");
 
         when(userRepository.findByUsername("oldUsername")).thenReturn(Optional.of(user));
         when(userRepository.findByUsername("newUsername")).thenReturn(Optional.empty());
@@ -80,13 +85,8 @@ public class UserServiceTest {
 
     @Test
     void shouldThrowUserAlreadyExistsExceptionWhenUpdatingUserInfoToTakenUsername() {
-        User currentUser = new User();
-        currentUser.setUserId(1L);
-        currentUser.setUsername("oldUsername");
-
-        User otherUser = new User();
-        otherUser.setUserId(2L);
-        otherUser.setUsername("newUsername");
+        User currentUser = createUser(1L, "oldUsername",  "password");
+        User otherUser = createUser(2L, "newUsername",  "password");
 
         when(userRepository.findByUsername("oldUsername")).thenReturn(Optional.of(currentUser));
         when(userRepository.findByUsername("newUsername")).thenReturn(Optional.of(otherUser));
@@ -97,11 +97,7 @@ public class UserServiceTest {
 
     @Test
     void shouldUpdatePasswordCorrectly() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("username");
-        user.setPassword("oldHashedPassword");
-
+        User user = createUser(1L, "username", "oldHashedPassword");
         UserPasswordUpdateRequest request = new UserPasswordUpdateRequest("oldRawPassword", "newRawPassword");
         String newHashedPassword = "newHashedPassword";
 
@@ -116,11 +112,7 @@ public class UserServiceTest {
 
     @Test
     void shouldThrowBadCredentialsExceptionWhenUpdatingPasswordWithWrongOldPassword() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("username");
-        user.setPassword("oldHashedPassword");
-
+        User user = createUser(1L, "username", "oldHashedPassword");
         UserPasswordUpdateRequest request = new UserPasswordUpdateRequest("wrongOldPassword", "newRawPassword");
 
         when(userRepository.findByUsername("username")).thenReturn(Optional.of(user));
@@ -133,9 +125,7 @@ public class UserServiceTest {
 
     @Test
     void shouldDeleteUserCorrectly() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("username");
+        User user = createUser(1L, "username", "password");
 
         when(userRepository.findByUsername("username")).thenReturn(Optional.of(user));
         userService.deleteUser("username");
@@ -152,9 +142,7 @@ public class UserServiceTest {
 
     @Test
     void shouldGetUserProfileCorrectly() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUsername("username");
+        User user = createUser(1L, "username", "password");
 
         when(userRepository.findByUsername("username")).thenReturn(Optional.of(user));
 
