@@ -52,8 +52,19 @@ const Dashboard = () => {
         reader.readAsText(file);
     }
 
-    const handleExportClick = (taskToExport:TaskData | null | undefined) => {
-        exportTasks(taskToExport, true);
+    const handleExportClick = async (taskToExport:TaskData | null | undefined) => {
+        if(!taskToExport?.id) return
+        try {
+            const response = await axiosClient.get<TaskData>(`/tasks/${taskToExport.id}`);
+            const taskWithLatestTree: TaskData = {
+                ...response.data,
+                ...(taskToExport.title ? {title: taskToExport.title} : {}),
+                ...(taskToExport.description !== undefined ? {description: taskToExport.description} : {}),
+            };
+            exportTasks(taskWithLatestTree, true);
+        } catch (error) {
+            console.error("Export error: ", error);
+        }
     }
 
     const handleCancelClick = () => {

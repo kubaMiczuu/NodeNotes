@@ -42,7 +42,7 @@ const TaskFormModal = ({mode, initialData, onExport, onCancel, onSuccess}:TaskFo
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    const {control, register, handleSubmit, setValue, formState: {errors}} = useForm<TaskFormData>({
+    const {control, register, handleSubmit, setValue, getValues, formState: {errors}} = useForm<TaskFormData>({
         resolver: zodResolver(taskSchema),
         mode: "onTouched",
         defaultValues: {
@@ -156,7 +156,7 @@ const TaskFormModal = ({mode, initialData, onExport, onCancel, onSuccess}:TaskFo
                             </button>
 
 
-                            <button onClick={() => onExport(initialData)} type={'button'}
+                            <button onClick={() => onExport({...initialData, ...getValues()} as TaskData )} type={'button'}
                                     className="flex justify-center items-center gap-2 text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
