@@ -2,10 +2,12 @@ package org.jakubmiczek.nodenotes.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jakubmiczek.nodenotes.controller.dto.TaskImportRequest;
 import org.jakubmiczek.nodenotes.controller.dto.TaskRequest;
 import org.jakubmiczek.nodenotes.controller.dto.TaskResponse;
 import org.jakubmiczek.nodenotes.controller.dto.TaskUpdateRequest;
 import org.jakubmiczek.nodenotes.entity.TaskStatus;
+import org.jakubmiczek.nodenotes.entity.TaskType;
 import org.jakubmiczek.nodenotes.service.TaskService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,9 +33,23 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping
-    public ResponseEntity<Void> updateTask(@Valid @RequestBody TaskUpdateRequest taskUpdateRequest, Principal principal) {
-        taskService.updateTask(taskUpdateRequest, principal.getName());
+    @PostMapping("/import")
+    public ResponseEntity<Void> importTask(@Valid @RequestBody TaskImportRequest taskImportRequest, Principal principal) {
+        taskService.importTask(taskImportRequest, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/import/all")
+    public ResponseEntity<Void> importAllTasks(@Valid @RequestBody List<TaskImportRequest> taskImportRequests, Principal principal) {
+        taskService.importAllTasks(taskImportRequests, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateTask(@Valid @RequestBody TaskUpdateRequest taskUpdateRequest, @PathVariable("id") Long id, Principal principal) {
+        taskService.updateTask(taskUpdateRequest, id, principal.getName());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -46,11 +63,22 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<Page<TaskResponse>> getTasks(
-            @RequestParam (required = false) TaskStatus status,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskType type,
             @RequestParam(required = false) String title,
             Principal principal,
             @PageableDefault(sort = "taskId", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(taskService.getTasks(principal.getName(), status, title, pageable));
+        return ResponseEntity.ok(taskService.getTasks(principal.getName(), status, type, title, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(taskService.getTaskById(id, principal.getName()));
+    }
+
+    @GetMapping("/export/all")
+    public ResponseEntity<List<TaskResponse>> getAllTasks(Principal principal) {
+        return ResponseEntity.ok(taskService.getAllTasks(principal.getName()));
     }
 }

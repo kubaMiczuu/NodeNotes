@@ -1,10 +1,13 @@
-import TaskCard from "../components/TaskCard.tsx"
+import NoteTaskCard from "../components/NoteTaskCard.tsx"
 import {useEffect, useState} from "react"
-import TaskFormModal, {type TaskData} from "../components/TaskFormModal.tsx";
+import TaskFormModal from "../components/TaskFormModal.tsx";
+import type {TaskData} from "../types/task.ts"
 import DashboardToolbar from "../components/DashboardToolbar.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
 import Pagination from "../components/Pagination.tsx";
 import {useDebounce} from "../hooks/useDebounce.ts";
+import TreeTaskCard from "../components/TreeTaskCard.tsx";
+import {exportTasks} from "../utils/exportTasks.ts";
 
 const Dashboard = () => {
 
@@ -18,6 +21,7 @@ const Dashboard = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const debouncedSearchQuery = useDebounce(searchQuery, 300) || "";
     const [filterStatus, setFilterStatus] = useState<"ALL" | "TODO" | "IN_PROGRESS" | "DONE">("ALL");
+    const [filterType, setFilterType] = useState<"ALL" | "NOTE" | "TREE">("ALL");
 
     const handleUpdateClick = (task: TaskData) => {
         setSelectedTask(task);
@@ -29,9 +33,44 @@ const Dashboard = () => {
         setModalMode("ADD");
     }
 
+    const handleImportClick = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const fileContent = e.target?.result as string;
+                const parsedData = JSON.parse(fileContent);
+
+                await axiosClient.post("/tasks/import", parsedData);
+
+                setRefreshTrigger(prev => prev+1);
+
+            } catch (error) {
+                console.error("Import error: ", error);
+            }
+        }
+
+        reader.readAsText(file);
+    }
+
+    const handleExportClick = async (taskToExport:TaskData | null | undefined) => {
+        if(!taskToExport?.id) return
+        try {
+            const response = await axiosClient.get<TaskData>(`/tasks/${taskToExport.id}`);
+            const taskWithLatestTree: TaskData = {
+                ...response.data,
+                ...(taskToExport.title ? {title: taskToExport.title} : {}),
+                ...(taskToExport.description !== undefined ? {description: taskToExport.description} : {}),
+            };
+            exportTasks(taskWithLatestTree, true);
+        } catch (error) {
+            console.error("Export error: ", error);
+        }
+    }
+
     const handleCancelClick = () => {
         setSelectedTask(null);
         setModalMode(null);
+        setRefreshTrigger(prev => prev + 1);
     }
 
     const handleSearchChange = (newQuery:string) => {
@@ -39,41 +78,52 @@ const Dashboard = () => {
         setSearchQuery(newQuery);
     }
 
-    const handleFilterChange = (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => {
+    const handleStatusFilterChange = (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => {
         setCurrentPage(0);
         setFilterStatus(newStatus);
+    }
 
+    const handleTypeFilterChange = (newType:"ALL" | "NOTE" | "TREE") => {
+        setCurrentPage(0);
+        setFilterType(newType);
     }
 
     useEffect(() => {
-        // eslint-disable-next-line
-        setIsLoading(true);
+        const fetchData = async () => {
+            setIsLoading(true);
 
-        const requestParams:{ page: number; size: number, status?: string, title?: string } = {
-            page: currentPage,
-            size: 6
-        }
+            const requestParams: { page: number; size: number, status?: string, type?:string, title?: string } = {
+                page: currentPage,
+                size: 6
+            };
 
-        if(debouncedSearchQuery !== "") {
-            requestParams.title = debouncedSearchQuery;
-        }
-        if(filterStatus !== "ALL") {
-            requestParams.status = filterStatus;
-        }
+            if (debouncedSearchQuery !== "") {
+                requestParams.title = debouncedSearchQuery;
+            }
+            if (filterStatus !== "ALL") {
+                requestParams.status = filterStatus;
+            }
+            if (filterType !== "ALL") {
+                requestParams.type = filterType;
+            }
 
-        axiosClient.get("/tasks", {
-            params: requestParams
-        })
-            .then((response) => {
-                setTasks(response.data.content);
-                setTotalPages(response.data.totalPages);
+            axiosClient.get("/tasks", {
+                params: requestParams
             })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus]);
+                .then((response) => {
+                    setTasks(response.data.content);
+                    setTotalPages(response.data.totalPages);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        };
 
-    const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL";
+        void fetchData();
+
+    }, [currentPage, refreshTrigger, debouncedSearchQuery, filterStatus, filterType]);
+
+    const isSearchingOrFiltering = debouncedSearchQuery !== "" || filterStatus !== "ALL" || filterType !== "ALL";
 
     const renderContent = () => {
         if (isLoading) {
@@ -90,7 +140,7 @@ const Dashboard = () => {
                     <div className="flex flex-col items-center mt-20">
                         <h2 className="text-3xl font-bold text-slate-800">No tasks found!</h2>
                         <p className="text-slate-500 mt-2">Try adjusting your filters or search query.</p>
-                        <button onClick={() => { setSearchQuery(""); setFilterStatus("ALL"); }}
+                        <button onClick={() => { setSearchQuery(""); setFilterStatus("ALL");  setFilterType("ALL")}}
                         className={'mt-4 bg-sky-400 text-white px-4 py-2 rounded-lg cursor-pointer hover:scale-105 transition font-bold'}>
                             Clear Filters
                         </button>
@@ -112,12 +162,16 @@ const Dashboard = () => {
             <>
                 <ul className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
                     {tasks.map((task: TaskData) => (
-                        <li key={task.id} onClick={() => handleUpdateClick(task)}>
-                            <TaskCard task={task}/>
+                        <li key={task.id} className={`h-full block`} >
+                            {task.type === "NOTE"
+                                ? <NoteTaskCard task={task} totalTasks={tasks.length} onClick={() => handleUpdateClick(task)} />
+                                : <TreeTaskCard task={task} onClick={() => handleUpdateClick(task)} />
+                            }
                         </li>
                     ))}
                 </ul>
-                <div className="mt-4 p-4 flex items-center justify-center text-slate-400">
+
+                <div className="mt-2 p-3 flex items-center justify-center text-slate-400">
                     <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
                 </div>
             </>
@@ -125,17 +179,17 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="flex justify-between px-4 cursor-default">
-            <div className="flex flex-col w-full max-w-5xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-6">
+        <div className="flex justify-between cursor-default">
+            <div className="flex flex-col w-full max-w-6xl min-h-[calc(100vh-128px)] bg-white border border-slate-100 shadow-sm shadow-slate-200/40 rounded-2xl p-4">
                 
-                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} onAddClick={handleAddClick} onSearchChange={handleSearchChange} onFilterChange={handleFilterChange}/>
+                <DashboardToolbar currentQuery={searchQuery} currentFilter={filterStatus} currentType={filterType} onAddClick={handleAddClick} onImportClick={handleImportClick} onSearchChange={handleSearchChange} onFilterChange={handleStatusFilterChange} onTypeChange={handleTypeFilterChange}/>
 
                 {renderContent()}
 
             </div>
 
             {modalMode !== null && (
-                <TaskFormModal mode={modalMode} initialData={selectedTask} onCancel={() => handleCancelClick()} onSuccess={() => setRefreshTrigger(prev => prev+1)} />
+                <TaskFormModal mode={modalMode} initialData={selectedTask} onExport={handleExportClick} onCancel={() => handleCancelClick()} onSuccess={() => setRefreshTrigger(prev => prev+1)} />
             )}
         </div>
     )

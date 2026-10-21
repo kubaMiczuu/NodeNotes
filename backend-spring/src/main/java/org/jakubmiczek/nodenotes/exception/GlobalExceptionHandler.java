@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    @ExceptionHandler(SubItemDoesNotExistException.class)
+    public ResponseEntity<ApiErrorResponse> handleSubItemDoesNotExistException(SubItemDoesNotExistException ex) {
+        ApiErrorResponse error =  new ApiErrorResponse(HttpStatus.NOT_FOUND.value(), List.of(ex.getMessage()), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<ApiErrorResponse> handleUserAlreadyExistException(UserAlreadyExistException ex) {
         ApiErrorResponse error = new ApiErrorResponse(HttpStatus.CONFLICT.value(), List.of(ex.getMessage()), LocalDateTime.now());

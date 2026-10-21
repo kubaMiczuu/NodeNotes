@@ -4,13 +4,16 @@ interface ProfileInformationProps {
 
 const ProfileInformation = ({username}: ProfileInformationProps) => {
     return (
-        <div className="flex flex-col w-full min-h-1/3 gap-4 justify-center items-center">
+        <div className="flex w-full gap-4 py-4 items-center border-b border-slate-200">
 
-            <div className={`flex w-40 h-40 rounded-full border border-sky-200 bg-sky-100 justify-center items-center`}>
-                <h1 className={`text-slate-800 text-5xl tracking-widest text-center font-bold`}>{username.substring(0, 3).toUpperCase()}</h1>
+            <div className={`flex w-24 h-24 rounded-full border border-sky-200 bg-sky-100 justify-center items-center`}>
+                <h1 className={`text-slate-800 text-3xl tracking-widest text-center font-bold`}>{username.substring(0, 3).toUpperCase()}</h1>
             </div>
 
-            <h2 className={`text-slate-800 text-xl tracking-wider`}>{username}</h2>
+            <div>
+                <h2 className={`text-slate-800 text-xl tracking-wider font-bold`}>{username}</h2>
+                <p className="text-slate-500 text-sm mt-1">Manage your account and preferences.</p>
+            </div>
 
         </div>
     )

@@ -10,21 +10,17 @@ import DeleteConfirmOverlay from "./common/DeleteConfirmOverlay.tsx";
 import TaskStatusChangeButton from "./TaskStatusChangeButton.tsx";
 import ModalFooter from "./common/ModalFooter.tsx";
 import {axiosClient} from "../api/axiosClient.ts";
+import TaskTypeSelectButton from "./TaskTypeSelectButton.tsx";
+import type {TaskData} from "../types/task.ts"
+import InteractiveTreeContainer from "./InteractiveTreeContainer.tsx";
 
 interface TaskFormModalProps {
     mode: "UPDATE" | "ADD";
     initialData?: TaskData | null;
+    onExport: (task: TaskData | null | undefined) => void;
     onCancel: () => void;
     onSuccess: () => void;
 }
-
-export interface TaskData {
-    id?: number;
-    status: "TODO" | "IN_PROGRESS" | "DONE";
-    title: string;
-    description?: string;
-}
-
 const modeConfig = {
     ADD: {
         headerText: "Create a new task",
@@ -40,19 +36,20 @@ const modeConfig = {
     }
 }
 
-const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalProps) => {
+const TaskFormModal = ({mode, initialData, onExport, onCancel, onSuccess}:TaskFormModalProps) => {
 
     const config = modeConfig[mode];
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    const {control, register, handleSubmit, setValue, formState: {errors}} = useForm<TaskFormData>({
+    const {control, register, handleSubmit, setValue, getValues, formState: {errors}} = useForm<TaskFormData>({
         resolver: zodResolver(taskSchema),
         mode: "onTouched",
         defaultValues: {
             title: initialData?.title || "",
             description: initialData?.description || "",
-            status: initialData?.status || "TODO"
+            status: initialData?.status || "TODO",
+            type: initialData?.type || "NOTE"
         }
     });
 
@@ -61,11 +58,16 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
         name: 'status'
     })
 
-    const onSubmit = async (data: TaskData) => {
+    const currentType = useWatch({
+        control,
+        name: 'type'
+    })
+
+    const onSubmit = async (data: TaskFormData) => {
         if(mode === "ADD") {
-            await axiosClient.post("/tasks", {title: data.title, description: data.description})
+            await axiosClient.post("/tasks", {title: data.title, description: data.description, type: data.type})
         } else if(mode === "UPDATE") {
-            await axiosClient.put("/tasks", {taskId: initialData?.id, title: data.title, description: data.description, status: data.status})
+            await axiosClient.put("/tasks/"+initialData?.id, {title: data.title, description: data.description, status: data.status})
         }
 
         onSuccess();
@@ -91,9 +93,27 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
 
                     <InputField id={'title'} label={'Title'} placeholder={'Enter title'} register={register('title')} error={errors.title?.message}/>
 
-                    <TextAreaField id={'description'} label={'Description'} placeholder={'Type something about this task...'} register={register('description')} error={errors.description?.message}/>
+                    {currentType === "NOTE" && (
+                        <TextAreaField id={'description'} label={'Description'} placeholder={'Type something about this task...'} register={register('description')} error={errors.description?.message}/>
+                    )}
 
-                    {mode === "UPDATE" && (
+                    {mode === "ADD" && (
+                        <>
+                            <h2 className={`text-md text-slate-700 font-bold`}>
+                                Select Task Type
+                            </h2>
+
+                            <div className={`flex gap-4 justify-center`}>
+
+                                <TaskTypeSelectButton type={"NOTE"} onValueChange={setValue} isActive={currentType === "NOTE"} />
+
+                                <TaskTypeSelectButton type={"TREE"} onValueChange={setValue} isActive={currentType === "TREE"} />
+
+                            </div>
+                        </>
+                    )}
+
+                    {mode === "UPDATE" && currentType === "NOTE" && (
                         <div className={`flex gap-4 justify-center`}>
 
                             {currentStatus !== "TODO" && (
@@ -111,22 +131,52 @@ const TaskFormModal = ({mode, initialData, onCancel, onSuccess}:TaskFormModalPro
                         </div>
                     )}
 
-                </div>
-
-                <div className={`flex flex-col-reverse md:flex-row items-center gap-4  mt-4 md:mt-16 w-full ${mode === "UPDATE" ? "justify-between" : "justify-center"}`}>
-
-                    {mode === "UPDATE" && (
-                        <button className="text-xl w-full md:w-auto px-6 py-2 text-rose-600 font-bold bg-rose-50 hover:bg-rose-100 hover:scale-105 rounded-lg transition cursor-pointer"
-                                onClick={() => setShowDeleteConfirm(true)} type={'button'}
-                        >
-                            Delete task
-                        </button>
+                    {mode === "UPDATE" && currentType === "TREE" && (
+                        <InteractiveTreeContainer taskId={initialData?.id} initialItems={initialData?.children} />
                     )}
 
-                    <ModalFooter onCancel={onCancel} submitText={config.buttonText} />
+                </div>
+
+                <div className={`flex flex-col-reverse md:flex-row items-baseline gap-4 mt-4 mb-4 md:mt-16 w-full ${mode === "UPDATE" ? "justify-between" : "justify-center"}`}>
+
+                    {mode === "UPDATE" && (
+                        <div className={`flex gap-4 justify-center`}>
+
+                            <button onClick={() => setShowDeleteConfirm(true)} type={'button'}
+                                    className="flex justify-center items-center gap-2 text-xl w-full md:w-auto px-6 py-2 text-rose-600 font-bold bg-rose-50 hover:bg-rose-100 hover:scale-105 rounded-lg transition cursor-pointer">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke-width="1.5" stroke="currentColor" className="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+                                </svg>
+
+                                Delete task
+
+                            </button>
+
+
+                            <button onClick={() => onExport({...initialData, ...getValues()} as TaskData )} type={'button'}
+                                    className="flex justify-center items-center gap-2 text-xl w-full md:w-auto px-6 py-2 text-slate-800 font-bold bg-slate-200 hover:bg-slate-300 hover:scale-105 border border-slate-200 rounded-lg transition cursor-pointer">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke-width="1.5" stroke="currentColor" className="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                                </svg>
+
+                                Export task
+
+                            </button>
+                        </div>
+
+                    )}
+
+                    <ModalFooter onCancel={onCancel} submitText={config.buttonText}/>
 
                     {showDeleteConfirm && (
-                        <div className={`absolute inset-0 z-10 bg-white/90 backdrop-blur-sm flex items-center justify-center rounded-2xl`}>
+                        <div
+                            className={`absolute inset-0 z-10 bg-white/90 backdrop-blur-sm flex items-center justify-center rounded-2xl`}>
                             <DeleteConfirmOverlay onCancel={setShowDeleteConfirm} onConfirm={handleDeleteTask} toDelete={"task"}/>
                         </div>
                     )}

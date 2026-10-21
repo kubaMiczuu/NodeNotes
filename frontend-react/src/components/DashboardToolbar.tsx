@@ -1,40 +1,95 @@
+import {useRef} from "react";
+
 interface DashboardToolbarProps {
     currentQuery: string;
     currentFilter: "ALL" | "TODO" | "IN_PROGRESS" | "DONE";
+    currentType: "ALL" | "NOTE" | "TREE";
     onAddClick: () => void;
+    onImportClick: (file: File) => void;
     onSearchChange: (newQuery:string) => void;
     onFilterChange: (newStatus:"ALL" | "TODO" | "IN_PROGRESS" | "DONE") => void;
+    onTypeChange: (newType:"ALL" | "NOTE" | "TREE") => void;
 }
 
-const DashboardToolbar = ({currentQuery, currentFilter, onAddClick, onSearchChange, onFilterChange}: DashboardToolbarProps) => {
+const DashboardToolbar = ({currentQuery, currentFilter, currentType, onAddClick, onImportClick, onSearchChange, onFilterChange, onTypeChange}: DashboardToolbarProps) => {
+
+    const fileImportRef = useRef<HTMLInputElement>(null);
+
     return (
-        <div className="flex flex-col md:flex-row justify-center mb-6 gap-4 p-4">
+        <div className={`flex flex-col p-4 pt-1`}>
+            <div className="flex flex-col md:flex-row justify-center gap-4 p-3">
 
-            <button onClick={() => onAddClick()} className="font-extrabold tracking-wider text-center w-full md:w-1/2 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
-                Click me to add new task!
-            </button>
+                <button onClick={() => onAddClick()}
+                        className="flex items-center justify-center gap-2 font-extrabold tracking-wider text-center w-full md:w-5/8 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
 
-            <input value={currentQuery} onChange={(e) => {onSearchChange(e.target.value)}} placeholder={'Search for tasks...'} className={`border border-slate-200 rounded-lg p-2 w-full md:w-1/3 text-slate-500 focus:outline-none`}/>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" className="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
 
-            <select value={currentFilter} onChange={(e) => onFilterChange(e.target.value as "ALL" | "TODO" | "IN_PROGRESS" | "DONE")} className={`border border-slate-200 rounded-lg p-2 w-full md:w-1/3 text-slate-500 transition cursor-pointer focus:outline-none focus:ring-sky-300`}>
+                    Create a new task!
 
-                <option value="ALL">
-                    All
-                </option>
+                </button>
 
-                <option value={'TODO'}>
-                    TODO
-                </option>
+                <button type={"button"} onClick={() => fileImportRef.current?.click()}
+                        className="flex items-center justify-center gap-2 font-extrabold tracking-wider text-center w-full md:w-3/8 text-xl text-white bg-sky-400 hover:bg-sky-500 hover:scale-105 transition px-4 py-3 rounded-xl cursor-pointer">
 
-                <option value={'IN_PROGRESS'}>
-                    IN PROGRESS
-                </option>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" className="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                    </svg>
 
-                <option value={'DONE'}>
-                    DONE
-                </option>
-            </select>
 
+                    Import task!
+
+                </button>
+                <input type="file" accept=".json" ref={fileImportRef} className="hidden" onChange={(e) => {
+                    const file: File | undefined = e.target.files?.[0];
+                    if (file) {
+                        onImportClick(file)
+                    }
+                    e.target.value = "";
+                }} />
+
+                <input value={currentQuery} onChange={(e) => {onSearchChange(e.target.value)}} placeholder={'Search for tasks...'} className={`border border-slate-200 rounded-lg p-2 w-full md:w-1/3 text-slate-500 focus:outline-none`}/>
+
+                <select value={currentFilter} onChange={(e) => onFilterChange(e.target.value as "ALL" | "TODO" | "IN_PROGRESS" | "DONE")} className={`border border-slate-200 rounded-lg p-2 w-full md:w-1/3 text-slate-500 transition cursor-pointer focus:outline-none focus:ring-sky-300`}>
+
+                    <option value="ALL">
+                        All
+                    </option>
+
+                    <option value={'TODO'}>
+                        TODO
+                    </option>
+
+                    <option value={'IN_PROGRESS'}>
+                        IN PROGRESS
+                    </option>
+
+                    <option value={'DONE'}>
+                        DONE
+                    </option>
+                </select>
+
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-center gap-4 p-3">
+
+                <button onClick={() => onTypeChange("ALL")}
+                        className={`px-4 py-2 border border-slate-200 rounded-2xl text-sm transition font-semibold hover:scale-115 cursor-pointer ${currentType === "ALL" ? "bg-sky-400 font-bold text-white hover:bg-sky-500 active:bg-sky-500" : "bg-white text-slate-800"}`}
+                >ALL TYPES</button>
+
+                <button onClick={() => onTypeChange("NOTE")}
+                        className={`px-4 py-2 border border-slate-200 rounded-2xl text-sm transition font-semibold hover:scale-115 cursor-pointer ${currentType === "NOTE" ? "bg-sky-400 font-bold text-white hover:bg-sky-500 active:bg-sky-500" : "bg-white text-slate-800"}`}
+                >NOTES</button>
+
+                <button onClick={() => onTypeChange("TREE")}
+                        className={`px-4 py-2 border border-slate-200 rounded-2xl text-sm transition font-semibold hover:scale-115 cursor-pointer ${currentType === "TREE" ? "bg-sky-400 font-bold text-white hover:bg-sky-500 active:bg-sky-500" : "bg-white text-slate-800"}`}
+                >TREES</button>
+
+            </div>
         </div>
     )
 }
